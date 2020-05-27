@@ -9,6 +9,9 @@ import each from 'lodash/each';
 export function randomize_copy(rom, options) { return randomize(rom.slice(), options); }
 
 export function randomize(rom, options = {}) {
+    if (options.mode === 'none')
+        return rom;
+
     const algorithms = {
         blackout: [(x, y) => y, color_f.black],
     };
