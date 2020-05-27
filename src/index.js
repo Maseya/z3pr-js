@@ -17,7 +17,7 @@ export function randomize(rom, options = {}) {
     };
     const algorithm = algorithms[options.mode];
     if (!algorithm)
-        throw new Error('TODO');
+        throw new Error(`Invalid randomize mode: ${options.mode}`);
 
     const palette_editors = map(build_offsets(options), offsets => palette_editor(rom, offsets));
 

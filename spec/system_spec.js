@@ -31,6 +31,10 @@ describe('Palette randomizer', () => {
         }
     });
 
+    it('only allows valid modes', () => {
+        (() => randomize([], { ...default_options, mode: 'invalid' })).should.throw(/invalid/);
+    });
+
     it('does nothing to any data', () => {
         const input = rom.slice();
 
