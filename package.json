@@ -1,0 +1,15 @@
+{
+  "name": "zelda3-palette-randomizer-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "mocha -r esm \"./spec/**/*_spec.js\""
+  },
+  "dependencies": {
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "esm": "^3.2.25"
+  }
+}
