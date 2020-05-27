@@ -13,6 +13,7 @@ export function randomize(rom, options = {}) {
         return rom;
 
     const algorithms = {
+        grayscale: [(x, y) => x.grayscale(), null],
         negative: [(x, y) => x.invert(), null],
         blackout: [(x, y) => y, color_f.black],
     };
