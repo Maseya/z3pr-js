@@ -10,6 +10,9 @@ import parseInt from 'lodash/parseInt';
 import base from './base.json';
 import negative from './negative.json';
 import grayscale from './grayscale.json';
+import maseya from './maseya.json';
+
+import color_f from '../src/color_f';
 
 import { randomize } from '../src/';
 
@@ -96,6 +99,30 @@ describe('Palette randomizer', () => {
             slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
         }
     });
+
+    it('does maseya blend of all data', () => {
+        const input = rom.slice();
+
+        const actual = randomize(input, { ...default_options, mode: 'maseya' }, next_color(maseya.random));
+
+        for (const [i] of entries(base.raw)) {
+            const expected = maseya.raw[i];
+            slice(actual, i, i + 2).should.be.deep.equal(expected, `at raw ${i}`);
+        }
+        for (const [i] of entries(base.oam)) {
+            const expected = maseya.oam[i];
+            slice(actual, i + 0, i + 2).should.be.deep.equal(slice(expected, 0, 2), `at oam ${i + 0}`);
+            slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
+        }
+    });
+
+    function next_color(source) {
+        let i = 0;
+        return function () {
+            const [r, g, b] = source[i++];
+            return color_f(r, g, b);
+        };
+    }
 
     function entries(obj) {
         return map(toPairs(obj), ([offset, bytes]) => [parseInt(offset), bytes]);

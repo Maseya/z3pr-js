@@ -34,7 +34,8 @@ export default function (rom, offsets) {
     }
 
     methods.blend = blend;
-    function blend(blend_fn, blend_color) {
+    function blend(blend_fn, blend_color_fn) {
+        const blend_color = blend_color_fn();
         items = mapValues(items, color => blend_fn(color, blend_color));
     };
 

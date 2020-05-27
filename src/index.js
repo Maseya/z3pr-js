@@ -1,5 +1,6 @@
 import build_offsets from './offsets/';
 import palette_editor from './palette_editor';
+import maseya_blend from './maseya_blend';
 
 import color_f from './color_f';
 
@@ -8,14 +9,15 @@ import each from 'lodash/each';
 
 export function randomize_copy(rom, options) { return randomize(rom.slice(), options); }
 
-export function randomize(rom, options = {}) {
+export function randomize(rom, options = {}, next_color) {
     if (options.mode === 'none')
         return rom;
 
     const algorithms = {
-        grayscale: [(x, y) => x.grayscale(), null],
-        negative: [(x, y) => x.invert(), null],
-        blackout: [(x, y) => y, color_f.black],
+        maseya: [maseya_blend, next_color],
+        grayscale: [(x, y) => x.grayscale(), () => null],
+        negative: [(x, y) => x.invert(), () => null],
+        blackout: [(x, y) => y, () => color_f.black],
     };
     const algorithm = algorithms[options.mode];
     if (!algorithm)
