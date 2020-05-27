@@ -5,6 +5,7 @@ import { le_dw_value, le_dw_bytes } from './util';
 import each from 'lodash/each';
 import mapValues from 'lodash/mapValues';
 import transform from 'lodash/transform';
+import clamp from 'lodash/clamp';
 import parseInt from 'lodash/parseInt';
 
 export default function (rom, offsets) {
@@ -13,7 +14,7 @@ export default function (rom, offsets) {
     let items = transform(offsets,
         (items, offset) => {
             const [r, g, b] = offset >= 0 ? raw(offset) : oam(-offset);
-            items[offset] = color_f(r / 31, g / 31, b / 31);
+            items[offset] = color_f(r / 255, g / 255, b / 255);
         },
         {});
 
@@ -22,14 +23,14 @@ export default function (rom, offsets) {
         const r = (color >>> 0) & 0x1F;
         const g = (color >>> 5) & 0x1F;
         const b = (color >>> 10) & 0x1F;
-        return [r, g, b];
+        return [r << 3, g << 3, b << 3];
     }
 
     function oam(offset) {
         const r = rom[offset + 0] & 0x1F;
         const g = rom[offset + 1] & 0x1F;
         const b = rom[offset + 4] & 0x1F;
-        return [r, g, b];
+        return [r << 3, g << 3, b << 3];
     }
 
     methods.blend = blend;
@@ -59,9 +60,16 @@ export default function (rom, offsets) {
         }
 
         function snes_5bit_channels(color) {
-            const r = (color.r * 31 + .5) >>> 0;
-            const g = (color.g * 31 + .5) >>> 0;
-            const b = (color.b * 31 + .5) >>> 0;
+            function convert_channel(x) {
+                // Convert channel from [0,1] (float point) to [0,255] (integer).
+                x = (x * 255 + .5) >>> 0;
+                // Convert to 5-bit snes channel, with +4 for 8 boundary rounding.
+                return clamp(x + 4, 255) >>> 3;
+            }
+
+            const r = convert_channel(color.r);
+            const g = convert_channel(color.g);
+            const b = convert_channel(color.b);
             return [r, g, b];
         }
 
