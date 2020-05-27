@@ -9,6 +9,7 @@ import parseInt from 'lodash/parseInt';
 
 import base from './base.json';
 import negative from './negative.json';
+import grayscale from './grayscale.json';
 
 import { randomize } from '../src/';
 
@@ -77,6 +78,22 @@ describe('Palette randomizer', () => {
         }
         for (const [i] of entries(base.oam)) {
             const expected = negative.oam[i];
+            slice(actual, i + 0, i + 2).should.be.deep.equal(slice(expected, 0, 2), `at oam ${i + 0}`);
+            slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
+        }
+    });
+
+    it('does grayscale of all data', () => {
+        const input = rom.slice();
+
+        const actual = randomize(input, { ...default_options, mode: 'grayscale' });
+
+        for (const [i] of entries(base.raw)) {
+            const expected = grayscale.raw[i];
+            slice(actual, i, i + 2).should.be.deep.equal(expected, `at raw ${i}`);
+        }
+        for (const [i] of entries(base.oam)) {
+            const expected = grayscale.oam[i];
             slice(actual, i + 0, i + 2).should.be.deep.equal(slice(expected, 0, 2), `at oam ${i + 0}`);
             slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
         }
