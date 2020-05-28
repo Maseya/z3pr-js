@@ -3,7 +3,6 @@ import color_f from './color_f';
 const { max } = Math;
 
 export default function (x, y) {
-    console.log('chroma', x.luma());
     // Ensure at least a 5% change in hue.
     const hue = (y.r * .95) + .025 + x.hue();
 

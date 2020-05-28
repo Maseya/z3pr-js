@@ -23,8 +23,8 @@ describe('Palette randomizer', () => {
     let default_options = {
         randomize_dungeon: true,
         randomize_overworld: true,
-        randomize_hud: true,
-        randomize_link_sprite: true,
+        randomize_hud: false,
+        randomize_link_sprite: false,
         randomize_sword: true,
         randomize_shield: true,
     };
@@ -121,7 +121,6 @@ describe('Palette randomizer', () => {
     function next_color(source) {
         let i = 0;
         return function () {
-            i %= source.length;
             const [r, g, b] = source[i++];
             return color_f(r, g, b);
         };
