@@ -12,6 +12,8 @@ import negative from './negative.json';
 import grayscale from './grayscale.json';
 import maseya from './maseya.json';
 
+import color_f from '../src/color_f';
+
 import { randomize } from '../src/';
 
 describe('Palette randomizer', () => {
@@ -120,7 +122,8 @@ describe('Palette randomizer', () => {
         let i = 0;
         return function () {
             i %= source.length;
-            return source[i++];
+            const [r, g, b] = source[i++];
+            return color_f(r, g, b);
         };
     }
 

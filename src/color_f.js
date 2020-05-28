@@ -1,4 +1,6 @@
 import clamp from 'lodash/clamp';
+import max from 'lodash/max';
+import min from 'lodash/min';
 
 const { abs } = Math;
 
@@ -13,8 +15,46 @@ function color_f(r, g, b) {
     g = clamp(g, 0, 1);
     b = clamp(b, 0, 1);
 
-    const luma = () => (luma_r * r) + (luma_g * g) + (luma_b * b);
+    methods.hue = hue;
+    function hue() {
+        // When chroma is zero, there is no hue, as the color is not any more
+        // red, green, or blue.Technically, NaN should be returned, but this
+        // causes a lot of exceptional circumstances that need to be checked,
+        // especially in blending. So we just say the hue is vacuously zero.
+        // This doesn't hurt the structure in any way and lets us make
+        // assumptions during other calculations.
+        const _chroma = chroma();
+        if (_chroma === 0)
+            return 0;
+
+        const _max = max([r, g, b]);
+        let hue;
+        if (_max == r) {
+            hue = (g - b) / _chroma;
+            if (hue < 0)
+                hue += 6;
+        }
+        else if (_max == g) {
+            hue = ((b - r) / _chroma) + 2;
+        }
+        else {
+            // _max is Blue
+            hue = ((r - g) / _chroma) + 4;
+        }
+
+        return hue / 6;
+    }
+
+    // chroma
+    methods.chroma = chroma;
+    function chroma() {
+        return max([r, g, b]) - min([r, g, b]);
+    }
+
     methods.luma = luma;
+    function luma() {
+        return (luma_r * r) + (luma_g * g) + (luma_b * b);
+    }
 
     methods.grayscale = () => color_f.from_hcy(0, 0, luma());
 
