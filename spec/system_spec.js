@@ -1,9 +1,11 @@
+import with_cases from './with_cases';
 import chai from 'chai';
 chai.should();
 
 import map from 'lodash/map';
 import slice from 'lodash/slice';
 import concat from 'lodash/concat';
+import keys from 'lodash/keys';
 import toPairs from 'lodash/toPairs';
 import parseInt from 'lodash/parseInt';
 
@@ -20,112 +22,118 @@ describe('Palette randomizer', () => {
 
     let rom;
 
-    let default_options = {
-        randomize_dungeon: true,
-        randomize_overworld: true,
-        randomize_sword: true,
-        randomize_shield: true,
-    };
-
     before(() => {
         rom = new Uint8Array(0x200000);
-        for (let [offset, bytes] of concat(toPairs(base.raw), toPairs(base.oam))) {
-            for (let byte of bytes) {
-                rom[offset++] = byte;
+        for (const subset in base) {
+            const data = base[subset];
+            for (let [offset, bytes] of concat(toPairs(data.raw), toPairs(data.oam))) {
+                for (let byte of bytes) {
+                    rom[offset++] = byte;
+                }
             }
         }
     });
 
     it('only allows valid modes', () => {
-        (() => randomize([], { ...default_options, mode: 'invalid' })).should.throw(/invalid/);
+        (() => randomize([], { mode: 'invalid' })).should.throw(/invalid/);
     });
 
-    it('does nothing to any data', () => {
-        const input = rom.slice();
+    context('with none mode', () => {
 
-        const actual = randomize(input, { ...default_options, mode: 'none' });
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`does nothing to ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = base[subset];
 
-        for (const [i, bytes] of entries(base.raw)) {
-            slice(actual, i, i + 2).should.be.deep.equal(bytes, `at raw ${i}`);
-        }
-        for (const [i, bytes] of entries(base.oam)) {
-            slice(actual, i + 0, i + 2).should.be.deep.equal(slice(bytes, 0, 2), `at oam ${i + 0}`);
-            slice(actual, i + 3, i + 5).should.be.deep.equal(slice(bytes, 3, 5), `at oam ${i + 3}`);
-        }
+            const actual = randomize(input, { mode: 'none', [option]: true });
+
+            should_have_expected_data(actual, data, i => data.raw[i], i => data.oam[i]);
+        }));
+
     });
 
-    it('does blackout of all data', () => {
-        const input = rom.slice();
+    context('with blackout mode', () => {
 
-        const actual = randomize(input, { ...default_options, mode: 'blackout' });
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
 
-        for (const [i] of entries(base.raw)) {
-            slice(actual, i, i + 2).should.be.deep.equal([0, 0], `at raw ${i}`);
-        }
-        for (const [i] of entries(base.oam)) {
-            slice(actual, i + 0, i + 2).should.be.deep.equal([0x20, 0x40], `at oam ${i + 0}`);
-            slice(actual, i + 3, i + 5).should.be.deep.equal([0x40, 0x80], `at oam ${i + 3}`);
-        }
+            const actual = randomize(input, { mode: 'blackout', [option]: true });
+
+            should_have_expected_data(actual, base[subset], () => [0, 0], () => [0x20, 0x40, 0, 0x40, 0x80]);
+        }));
+
     });
 
-    it('does negative of all data', () => {
-        const input = rom.slice();
+    context('with negative mode', () => {
 
-        const actual = randomize(input, { ...default_options, mode: 'negative' });
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = negative[subset];
 
-        for (const [i] of entries(base.raw)) {
-            const expected = negative.raw[i];
+            const actual = randomize(input, { mode: 'negative', [option]: true });
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+    });
+
+    context('with grayscale mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = grayscale[subset];
+
+            const actual = randomize(input, { mode: 'grayscale', [option]: true });
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+    });
+
+    context('with maseya blend mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = maseya[subset];
+
+            const actual = randomize(input, { mode: 'maseya', [option]: true }, next_color(data.random));
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+        function next_color(source) {
+            let i = 0;
+            return function () {
+                const [r, g, b] = source[i++];
+                return color_f(r, g, b);
+            };
+        }
+
+    });
+
+    function should_have_expected_data(actual, base, raw, oam) {
+        for (const i of offsets(base.raw)) {
+            const expected = raw(i);
             slice(actual, i, i + 2).should.be.deep.equal(expected, `at raw ${i}`);
         }
-        for (const [i] of entries(base.oam)) {
-            const expected = negative.oam[i];
+        for (const i of offsets(base.oam)) {
+            const expected = oam(i);
             slice(actual, i + 0, i + 2).should.be.deep.equal(slice(expected, 0, 2), `at oam ${i + 0}`);
             slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
         }
-    });
-
-    it('does grayscale of all data', () => {
-        const input = rom.slice();
-
-        const actual = randomize(input, { ...default_options, mode: 'grayscale' });
-
-        for (const [i] of entries(base.raw)) {
-            const expected = grayscale.raw[i];
-            slice(actual, i, i + 2).should.be.deep.equal(expected, `at raw ${i}`);
-        }
-        for (const [i] of entries(base.oam)) {
-            const expected = grayscale.oam[i];
-            slice(actual, i + 0, i + 2).should.be.deep.equal(slice(expected, 0, 2), `at oam ${i + 0}`);
-            slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
-        }
-    });
-
-    it('does maseya blend of all data', () => {
-        const input = rom.slice();
-
-        const actual = randomize(input, { ...default_options, mode: 'maseya' }, next_color(maseya.random));
-
-        for (const [i] of entries(base.raw)) {
-            const expected = maseya.raw[i];
-            slice(actual, i, i + 2).should.be.deep.equal(expected, `at raw ${i}`);
-        }
-        for (const [i] of entries(base.oam)) {
-            const expected = maseya.oam[i];
-            slice(actual, i + 0, i + 2).should.be.deep.equal(slice(expected, 0, 2), `at oam ${i + 0}`);
-            slice(actual, i + 3, i + 5).should.be.deep.equal(slice(expected, 3, 5), `at oam ${i + 3}`);
-        }
-    });
-
-    function next_color(source) {
-        let i = 0;
-        return function () {
-            const [r, g, b] = source[i++];
-            return color_f(r, g, b);
-        };
     }
 
-    function entries(obj) {
-        return map(toPairs(obj), ([offset, bytes]) => [parseInt(offset), bytes]);
+    function offsets(obj) {
+        return map(keys(obj), parseInt);
     }
 
 });
