@@ -9,10 +9,10 @@ import keys from 'lodash/keys';
 import toPairs from 'lodash/toPairs';
 import parseInt from 'lodash/parseInt';
 
-import base from './base.json';
-import negative from './negative.json';
-import grayscale from './grayscale.json';
-import maseya from './maseya.json';
+import base from './data/base.json';
+import negative from './data/negative.json';
+import grayscale from './data/grayscale.json';
+import maseya from './data/maseya.json';
 
 import color_f from '../src/color_f';
 
