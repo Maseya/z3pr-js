@@ -1,3 +1,14 @@
+import _max from 'lodash/max';
+import _min from 'lodash/min';
+
+export function max(...args) {
+    return _max(args);
+}
+
+export function min(...args) {
+    return _min(args);
+}
+
 export function le_dw_value(bytes, i) {
     return bytes[i+0] | (bytes[i+1] << 8);
 }

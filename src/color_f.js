@@ -1,6 +1,6 @@
+import { max, min } from './util';
+
 import clamp from 'lodash/clamp';
-import max from 'lodash/max';
-import min from 'lodash/min';
 
 const { abs } = Math;
 
@@ -18,7 +18,7 @@ function color_f(r, g, b) {
     methods.hue = hue;
     function hue() {
         // When chroma is zero, there is no hue, as the color is not any more
-        // red, green, or blue.Technically, NaN should be returned, but this
+        // red, green, or blue. Technically, NaN should be returned, but this
         // causes a lot of exceptional circumstances that need to be checked,
         // especially in blending. So we just say the hue is vacuously zero.
         // This doesn't hurt the structure in any way and lets us make
@@ -27,28 +27,27 @@ function color_f(r, g, b) {
         if (_chroma === 0)
             return 0;
 
-        const _max = max([r, g, b]);
+        const _max = max(r, g, b);
         let hue;
-        if (_max == r) {
+        if (_max === r) {
             hue = (g - b) / _chroma;
             if (hue < 0)
                 hue += 6;
         }
-        else if (_max == g) {
+        else if (_max === g) {
             hue = ((b - r) / _chroma) + 2;
         }
+        // _max === b
         else {
-            // _max is Blue
             hue = ((r - g) / _chroma) + 4;
         }
 
         return hue / 6;
     }
 
-    // chroma
     methods.chroma = chroma;
     function chroma() {
-        return max([r, g, b]) - min([r, g, b]);
+        return max(r, g, b) - min(r, g, b);
     }
 
     methods.luma = luma;
@@ -66,31 +65,30 @@ function color_f(r, g, b) {
 color_f.from_hcy = (hue, chroma, luma) => {
     chroma = clamp(chroma, 0, 1);
     luma = clamp(luma, 0, 1);
-    const [r, g, b] = rgb_from_hc(hue, chroma);
 
-    const base_r = r * luma_r;
-    const base_g = g * luma_g;
-    const base_b = b * luma_b;
-    const base_luma = base_r + base_g + base_b;
-    const min = clamp(luma - base_luma, 0, 1);
-    return color_f(min + r, min + g, min + b);
+    const base = color_from_hc(hue, chroma);
+    const min = max(luma - base.luma(), 0);
+    return color_f(min + base.r, min + base.g, min + base.b);
 };
 
-function rgb_from_hc(hue, chroma) {
+function color_from_hc(hue, chroma) {
     if (chroma === 0)
-        return [0, 0, 0];
+        return color_f(0, 0, 0);
 
     while (hue < 0) hue += 1;
     while (hue >= 1) hue -= 1;
 
     hue *= 6;
     const x = chroma * (1 - abs((hue % 2) - 1));
-    return hue <= 1 ? [chroma, x, 0]
+    const values =
+          hue <= 1 ? [chroma, x, 0]
         : hue <= 2 ? [x, chroma, 0]
         : hue <= 3 ? [0, chroma, x]
         : hue <= 4 ? [0, x, chroma]
         : hue <= 5 ? [x, 0, chroma]
                    : [chroma, 0, x];
+
+    return color_f(...values);
 }
 
 color_f.black = color_f(0, 0, 0);
