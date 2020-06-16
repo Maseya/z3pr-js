@@ -105,17 +105,17 @@ describe('Palette randomizer', () => {
             const option = `randomize_${subset}`;
             const data = maseya[subset];
 
-            const actual = randomize(input, { mode: 'maseya', [option]: true }, next_color(data.random));
+            const actual = randomize(input, { mode: 'maseya', [option]: true }, next_blend(data.random));
 
             should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
         }));
 
-        function next_color(source) {
-            let i = 0;
-            return function () {
-                const [r, g, b] = source[i++];
-                return color_f(r, g, b);
-            };
+        function next_blend(source) {
+            return function* () {
+                for (const args of source) {
+                    yield color_f(...args);
+                }
+            }
         }
 
     });
