@@ -34,9 +34,11 @@ export default function (rom, offsets) {
     }
 
     methods.blend = blend;
-    function blend(blend_fn, blend_color_fn) {
-        const blend_color = blend_color_fn();
-        items = mapValues(items, color => blend_fn(color, blend_color));
+    function blend(blend_fn, blend_iter) {
+        const blend = blend_iter.next();
+        if (blend.done)
+            throw new Error("Reached the end of blend iterator");
+        items = mapValues(items, color => blend_fn(color, blend.value));
     };
 
     methods.write_to_rom = write_to_rom;
