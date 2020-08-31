@@ -1,5 +1,7 @@
 import { max, min } from './util';
 
+import at from 'lodash/at';
+import isEqual from 'lodash/isEqual';
 import clamp from 'lodash/clamp';
 
 const { abs } = Math;
@@ -76,6 +78,10 @@ function color_f(r, g, b) {
     return { ...methods, r, g, b };
 }
 
+color_f.hue_blend = (a, b) => color_f.from_hcy(b.hue(), a.chroma(), a.luma());
+
+color_f.luma_blend = (a, b) => color_f.from_hcy(a.hue(), a.chroma(), b.luma());
+
 color_f.from_hcy = (hue, chroma, luma) => {
     chroma = clamp(chroma, 0, 1);
     luma = clamp(luma, 0, 1);
@@ -114,6 +120,11 @@ function color_from_hc(hue, chroma) {
 
     return color_f(...values);
 }
+
+color_f.equals = (a, b) => isEqual(
+    at(a, 'r', 'g', 'b'),
+    at(b, 'r', 'g', 'b')
+);
 
 color_f.black = color_f(0, 0, 0);
 

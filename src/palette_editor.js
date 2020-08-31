@@ -1,5 +1,6 @@
 import color_f from './color_f';
 
+import { group_values_ordered } from './util';
 import { le_dw_value, le_dw_bytes } from './util';
 
 import each from 'lodash/each';
@@ -14,9 +15,10 @@ export default function (rom, offsets) {
     let items = transform(offsets,
         (items, offset) => {
             const [r, g, b] = offset >= 0 ? raw(offset) : oam(-offset);
-            items[offset] = color_f(r / 255, g / 255, b / 255);
+            items[offset] = color_f(r / 0xFF, g / 0xFF, b / 0xFF);
         },
         {});
+    const by_color = group_values_ordered(offsets, (a, b) => color_f.equals(items[a], items[b]))
 
     function raw(offset) {
         const color = le_dw_value(rom, offset);
@@ -33,13 +35,25 @@ export default function (rom, offsets) {
         return [r << 3, g << 3, b << 3];
     }
 
-    methods.blend = blend;
-    function blend(blend_fn, blend_iter) {
+    methods.blend_uniformly = blend_uniformly;
+    function blend_uniformly(blend_fn, blend_iter) {
         const blend = blend_iter.next();
         if (blend.done)
             throw new Error("Reached the end of blend iterator");
         items = mapValues(items, color => blend_fn(color, blend.value));
     };
+
+    methods.blend_per_color = blend_per_color;
+    function blend_per_color(blend_fn, blend_iter) {
+        for (const [offset, offsets] of by_color) {
+            const base = items[offset];
+            const blend = blend_iter.next();
+            if (blend.done)
+                throw new Error("Reached the end of blend iterator");
+            const color = blend_fn(base, blend.value);
+            each(offsets, offset => items[offset] = color);
+        }
+    }
 
     methods.write_to_rom = write_to_rom;
     function write_to_rom(rom) {
