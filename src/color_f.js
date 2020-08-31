@@ -50,9 +50,23 @@ function color_f(r, g, b) {
         return max(r, g, b) - min(r, g, b);
     }
 
+    methods.saturation = saturation;
+    function saturation() {
+        const lightness = this.lightness();
+        if (lightness === 0 || lightness === 1)
+            return 0;
+        const saturation = this.chroma() / (1 - abs(lightness * 2 - 1));
+        return clamp(saturation, 0, 1);
+    }
+
     methods.luma = luma;
     function luma() {
         return (luma_r * r) + (luma_g * g) + (luma_b * b);
+    }
+
+    methods.lightness = lightness;
+    function lightness() {
+        return (max(r, g, b) + min(r, g, b)) / 2;
     }
 
     methods.grayscale = () => color_f.from_hcy(0, 0, luma());
@@ -69,6 +83,16 @@ color_f.from_hcy = (hue, chroma, luma) => {
     const base = color_from_hc(hue, chroma);
     const min = max(luma - base.luma(), 0);
     return color_f(min + base.r, min + base.g, min + base.b);
+};
+
+color_f.from_hsl = (hue, saturation, lightness) => {
+    saturation = clamp(saturation, 0, 1);
+    lightness = clamp(lightness, 0, 1);
+
+    const chroma = (1 - abs(lightness * 2 - 1)) * saturation;
+    const base = color_from_hc(hue, chroma);
+    const match = lightness - (chroma / 2);
+    return color_f(match + base.r, match + base.g, match + base.b);
 };
 
 function color_from_hc(hue, chroma) {
