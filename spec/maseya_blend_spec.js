@@ -8,7 +8,7 @@ const { abs, min } = Math;
 
 import color_f from '../src/color_f';
 
-import maseya_blend from '../src/maseya_blend';
+import { maseya_blend } from '../src/blends';
 
 const delta = 10e-9;
 const repeats = 500;

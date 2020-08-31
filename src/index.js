@@ -1,6 +1,6 @@
 import build_offsets from './offsets/';
 import palette_editor from './palette_editor';
-import maseya_blend from './maseya_blend';
+import { maseya_blend, classic_blend } from './blends';
 
 import color_f from './color_f';
 import random from './random';
@@ -20,6 +20,7 @@ export function randomize(rom, options = {}, next_blend) {
         grayscale: [(x, y) => x.grayscale(), infinite_null],
         negative: [(x, y) => x.invert(), infinite_null],
         blackout: [(x, y) => y, infinite_black],
+        classic: [classic_blend, next_blend || random_blend],
     };
     const algorithm = algorithms[options.mode];
     if (!algorithm)
