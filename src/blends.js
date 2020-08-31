@@ -45,7 +45,7 @@ export function maseya_blend(base, blend) {
 export function classic_blend(base, blend) {
     const constrict = (value) => (value * (240.0 - 60.0) / 255.0) + (60.0 / 255.0);
 
-    blend = color_f(map(at(blend, 'r', 'g', 'b'), constrict));
+    blend = color_f(...map(at(blend, 'r', 'g', 'b'), constrict));
 
     return color_f.from_hsl(
         base.hue() + blend.hue(),

@@ -13,6 +13,10 @@ import base from './data/base.json';
 import negative from './data/negative.json';
 import grayscale from './data/grayscale.json';
 import maseya from './data/maseya.json';
+import classic from './data/classic.json';
+import dizzy from './data/dizzy.json';
+import sick from './data/sick.json';
+import puke from './data/puke.json';
 
 import color_f from '../src/color_f';
 
@@ -110,15 +114,90 @@ describe('Palette randomizer', () => {
             should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
         }));
 
-        function next_blend(source) {
-            return function* () {
-                for (const args of source) {
-                    yield color_f(...args);
-                }
-            }
-        }
+    });
+
+    context('with classic blend mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = classic[subset];
+
+            const actual = randomize(input, { mode: 'classic', [option]: true }, next_blend(data.random));
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
 
     });
+
+    context('with classic blend mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = classic[subset];
+
+            const actual = randomize(input, { mode: 'classic', [option]: true }, next_blend(data.random));
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+    });
+
+    context('with dizzy blend mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = dizzy[subset];
+
+            const actual = randomize(input, { mode: 'dizzy', [option]: true }, next_blend(data.random));
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+    });
+
+    context('with sick blend mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = sick[subset];
+
+            const actual = randomize(input, { mode: 'sick', [option]: true }, next_blend(data.random));
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+    });
+
+    context('with puke blend mode', () => {
+
+        with_cases('dungeon', 'sword', 'shield', 'overworld',
+        (subset) => it(`changes all ${subset} data`, () => {
+            const input = rom.slice();
+            const option = `randomize_${subset}`;
+            const data = puke[subset];
+
+            const actual = randomize(input, { mode: 'puke', [option]: true }, next_blend(data.random));
+
+            should_have_expected_data(actual, base[subset], i => data.raw[i], i => data.oam[i]);
+        }));
+
+    });
+
+    function next_blend(source) {
+        return function* () {
+            for (const args of source) {
+                yield color_f(...args);
+            }
+        }
+    }
 
     function should_have_expected_data(actual, base, raw, oam) {
         for (const i of offsets(base.raw)) {
