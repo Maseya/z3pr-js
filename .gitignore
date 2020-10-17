@@ -1,2 +1,6 @@
 /node_modules
 /package-lock.json
+
+# Do not add ROM files
+*.sfc
+*.smc
