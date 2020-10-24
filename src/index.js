@@ -9,6 +9,8 @@ import map from 'lodash/map';
 import each from 'lodash/each';
 import castArray from 'lodash/castArray';
 
+export { default as color_f } from './color_f';
+
 export function randomize_copy(rom, ...args) { return randomize(rom.slice(), ...args); }
 
 export function randomize(rom, options = {}, next_blend) {
